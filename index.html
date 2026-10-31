@@ -62,6 +62,7 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
 #inst{position:fixed;left:12px;right:12px;bottom:12px;max-width:520px;margin:0 auto;background:#1a1a1a;color:#fff;padding:12px;border-radius:6px;z-index:70;transform:translateY(160%);transition:transform .5s ease;font-size:.85rem}
 #inst.show{transform:none}
 #inst .btn{background:#fff;color:#1a1a1a;border-color:#fff}
+.mrow{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;padding:2px 0}.mrow span{font-weight:700}
 #exprev{max-width:100%;border:1px solid #1a1a1a;display:block;margin:8px 0}
 </style>
 </head>
@@ -87,13 +88,15 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
     <div style="padding:0 10px 10px">
       <div style="font-size:.8rem;font-weight:700;margin-top:6px">テーマ</div>
       <div class="chips" id="themeChips"></div>
-      <div class="row"><input type="text" id="newTheme" placeholder="新しいテーマ" maxlength="10" style="flex:1;min-width:120px"><button class="btn" id="addTheme">＋追加</button></div>
+      <div class="row"><input type="text" id="newTheme" placeholder="例：夕暮れ・お出かけ" maxlength="10" style="flex:1;min-width:120px"><button class="btn" id="addTheme">＋ 新しいテーマを追加</button></div>
+      <button class="btn mgrBtn" style="margin-top:8px;width:100%">🏷 テーマを管理（削除）</button>
       <button class="btn pri" id="saveBtn" style="width:100%;margin-top:10px">この色をあつめる</button>
     </div>
   </div>
 
   <h2>02 ／ あつめた色</h2>
   <div class="chips sm" id="filterChips"></div>
+  <button class="btn mgrBtn" style="margin-bottom:10px">🏷 テーマを追加・削除</button>
   <label style="font-size:.8rem">表示：
     <select id="modeSel">
       <option value="0">カラーコードと色名</option>
@@ -136,6 +139,13 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
     <button class="btn" id="pcOff">解除する</button>
   </div>
   <button class="btn" data-close style="width:100%;margin-top:12px">とじる</button>
+</div></div>
+
+<div class="mask" id="themeM"><div class="modal">
+  <h3>テーマの管理</h3>
+  <div class="row"><input type="text" id="mgrIn" placeholder="例：夕暮れ・お出かけ" maxlength="10" style="flex:1;min-width:120px"><button class="btn pri" id="mgrAdd">＋ 新しいテーマを追加</button></div>
+  <div id="mgrList" style="margin:12px 0"></div>
+  <button class="btn" data-close style="width:100%">とじる</button>
 </div></div>
 
 <div class="mask" id="exM"><div class="modal">
@@ -240,22 +250,39 @@ document.addEventListener('DOMContentLoaded', function () {
   var srcImg = null;
   function loadFile(f) {
     if (!f) return;
+    var MAX = 800;
+    function put(src, w, h) {
+      var sc = Math.min(1, MAX / Math.max(w, h));
+      cv.width = Math.max(1, Math.round(w * sc)); cv.height = Math.max(1, Math.round(h * sc));
+      ctx.drawImage(src, 0, 0, cv.width, cv.height);
+      srcImg = true; imgReady = true; cur = null;
+      $('picked').style.display = 'none';
+      $('stage').style.display = 'block';
+      toast('写真をなぞって色をえらんでください');
+    }
+    function viaImage() {
+      try {
+        var url = URL.createObjectURL(f), im = new Image();
+        var free = function () {
+          try { URL.revokeObjectURL(url); } catch (e) {}
+          im.onload = null; im.onerror = null; im.src = ''; im = null;
+        };
+        im.onload = function () {
+          try { put(im, im.naturalWidth || im.width, im.naturalHeight || im.height); } catch (e) { toast('写真を開けませんでした'); }
+          free();
+        };
+        im.onerror = function () { free(); toast('写真を開けませんでした'); };
+        im.src = url;
+      } catch (e) { toast('写真を開けませんでした'); }
+    }
     try {
-      var url = URL.createObjectURL(f), im = new Image();
-      im.onload = function () {
-        try {
-          var s = Math.min(1, 900 / Math.max(im.width, im.height));
-          cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s);
-          ctx.drawImage(im, 0, 0, cv.width, cv.height);
-          srcImg = true; imgReady = true;
-          $('stage').style.display = 'block';
-          toast('写真をなぞって色をえらんでください');
-        } catch (e) { toast('写真を開けませんでした'); }
-        try { URL.revokeObjectURL(url); } catch (e) {}
-      };
-      im.onerror = function () { toast('写真を開けませんでした'); };
-      im.src = url;
-    } catch (e) { toast('写真を開けませんでした'); }
+      if (window.createImageBitmap) {
+        createImageBitmap(f).then(function (bm) {
+          try { put(bm, bm.width, bm.height); } catch (e) { toast('写真を開けませんでした'); }
+          try { bm.close(); } catch (e) {}
+        }).catch(viaImage);
+      } else { viaImage(); }
+    } catch (e) { viaImage(); }
   }
   $('camBtn').addEventListener('click', function () { $('camIn').click(); });
   $('fileBtn').addEventListener('click', function () { $('fileIn').click(); });
@@ -307,11 +334,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var hex = toHex(r, g, b), name = nearest(r, g, b);
     var thumb = '';
     try {
-      var t = document.createElement('canvas'), S = 64; t.width = S; t.height = S;
-      var tc = t.getContext('2d'), side = Math.min(cv.width, cv.height, 120);
+      var t = document.createElement('canvas'), S = 200; t.width = S; t.height = S;
+      var tc = t.getContext('2d'), side = Math.min(cv.width, cv.height, 200);
       var sx = Math.max(0, Math.min(cv.width - side, p.x - side / 2)), sy = Math.max(0, Math.min(cv.height - side, p.y - side / 2));
       tc.drawImage(cv, sx, sy, side, side, 0, 0, S, S);
-      thumb = t.toDataURL('image/jpeg', 0.6);
+      thumb = t.toDataURL('image/jpeg', 0.7); t.width = 0; t.height = 0;
     } catch (e) {}
     cur = { r: r, g: g, b: b, hex: hex, name: name, thumb: thumb };
     $('picked').style.display = 'block';
@@ -332,12 +359,41 @@ document.addEventListener('DOMContentLoaded', function () {
       box.appendChild(b);
     });
   }
-  $('addTheme').addEventListener('click', function () {
-    var v = $('newTheme').value.trim(); if (!v) { toast('テーマ名を入れてください'); return; }
-    if (themes.indexOf(v) < 0) { themes.push(v); save(K.themes, themes); }
-    if (curThemes.indexOf(v) < 0) curThemes.push(v);
-    $('newTheme').value = ''; renderThemeChips(); renderFilter();
-  });
+  function addThemeFrom(inp, select) {
+    var v = inp.value.replace(/\s+/g, ' ').trim();
+    if (!v) { toast('テーマ名を入れてください'); return; }
+    if (v.length > 10) v = v.slice(0, 10);
+    if (themes.indexOf(v) < 0) { themes.push(v); save(K.themes, themes); toast('✓ 「' + v + '」を追加しました'); }
+    else { toast('「' + v + '」はすでにあります'); }
+    if (select && curThemes.indexOf(v) < 0) curThemes.push(v);
+    inp.value = ''; refreshThemes();
+  }
+  function delTheme(t) {
+    if (!confirm('テーマ「' + t + '」を削除しますか？\n（あつめた色は残り、このテーマの印だけ外れます）')) return;
+    themes = themes.filter(function (x) { return x !== t; });
+    curThemes = curThemes.filter(function (x) { return x !== t; });
+    items.forEach(function (it) { it.themes = (it.themes || []).filter(function (x) { return x !== t; }); });
+    if (filter === t) filter = '';
+    save(K.themes, themes); persistItems(); refreshThemes(); toast('「' + t + '」を削除しました');
+  }
+  function renderThemeMgr() {
+    var box = $('mgrList'); if (!box) return; box.innerHTML = '';
+    if (!themes.length) { box.innerHTML = '<div class="empty">テーマがありません。上から追加できます。</div>'; return; }
+    themes.forEach(function (t) {
+      var r = document.createElement('div'); r.className = 'mrow';
+      var sp = document.createElement('span'); sp.textContent = t;
+      var b = document.createElement('button'); b.className = 'btn'; b.textContent = '✕ 削除';
+      b.addEventListener('click', function () { delTheme(t); });
+      r.appendChild(sp); r.appendChild(b); box.appendChild(r);
+    });
+  }
+  function refreshThemes() { renderThemeChips(); renderFilter(); renderThemeMgr(); renderList(); }
+  $('addTheme').addEventListener('click', function () { addThemeFrom($('newTheme'), true); });
+  $('newTheme').addEventListener('keydown', function (e) { if (e.key === 'Enter') addThemeFrom($('newTheme'), true); });
+  $('mgrAdd').addEventListener('click', function () { addThemeFrom($('mgrIn'), false); });
+  $('mgrIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') addThemeFrom($('mgrIn'), false); });
+  var mb = document.querySelectorAll('.mgrBtn');
+  for (var bi = 0; bi < mb.length; bi++) mb[bi].addEventListener('click', function () { renderThemeMgr(); openM('themeM'); });
   $('saveBtn').addEventListener('click', function () {
     if (!cur) { toast('先に色をえらんでください'); return; }
     var it = { id: Date.now() + '' + Math.floor(Math.random() * 1000), r: cur.r, g: cur.g, b: cur.b, hex: cur.hex, name: cur.name, thumb: cur.thumb, date: today(), themes: curThemes.slice() };
@@ -482,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   $('instNo').addEventListener('click', function () { save(K.inst, true); inst.classList.remove('show'); });
 
-  renderThemeChips(); renderFilter(); renderList(); refreshLockState();
+  renderThemeChips(); renderFilter(); renderThemeMgr(); renderList(); refreshLockState();
 });
 </script>
 <footer style="text-align: center; font-size: 0.75rem; color: #888; margin-top: 3rem; padding: 1rem 0.5rem; line-height: 1.5;">
