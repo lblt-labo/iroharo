@@ -62,6 +62,8 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
 #inst{position:fixed;left:12px;right:12px;bottom:12px;max-width:520px;margin:0 auto;background:#1a1a1a;color:#fff;padding:12px;border-radius:6px;z-index:70;transform:translateY(160%);transition:transform .5s ease;font-size:.85rem}
 #inst.show{transform:none}
 #inst .btn{background:#fff;color:#1a1a1a;border-color:#fff}
+.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0}.ctrl>.btn{flex:0 0 auto}.ctrl .disp{display:flex;align-items:center;gap:6px;flex:1 1 220px;font-size:.85rem;white-space:nowrap}.ctrl .disp select{flex:1;min-width:0}
+@media(max-width:420px){.ctrl>.btn{flex:1 1 100%}}
 .mrow{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;padding:2px 0}.mrow span{font-weight:700}
 #exprev{max-width:100%;border:1px solid #1a1a1a;display:block;margin:8px 0}
 </style>
@@ -96,8 +98,9 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
 
   <h2>02 ／ あつめた色</h2>
   <div class="chips sm" id="filterChips"></div>
-  <button class="btn mgrBtn" style="margin-bottom:10px">🏷 テーマを追加・削除</button>
-  <label style="font-size:.8rem">表示：
+  <div class="ctrl">
+  <button class="btn mgrBtn">🏷 テーマを追加・削除</button>
+  <label class="disp"><span>表示：</span>
     <select id="modeSel">
       <option value="0">カラーコードと色名</option>
       <option value="1">カラーコードのみ</option>
@@ -105,6 +108,7 @@ input[type=text],input[type=password],input[type=tel],select{min-height:44px;bor
       <option value="3">表示なし</option>
     </select>
   </label>
+  </div>
   <div id="list" class="grid" style="margin-top:12px"></div>
 
   <h2>03 ／ 画像にして保存</h2>
@@ -467,8 +471,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var g = c.getContext('2d');
         g.fillStyle = '#faf8f3'; g.fillRect(0, 0, W, H);
         g.fillStyle = '#1a1a1a'; g.fillRect(60, 60, W - 120, 4);
-        g.font = font(54); g.textBaseline = 'alphabetic'; g.fillText('いろはろ', 60, 140);
-        g.font = font(28, '400'); g.textAlign = 'right'; g.fillText(title, W - 60, 140); g.textAlign = 'left';
+        g.textBaseline = 'alphabetic'; g.textAlign = 'left'; g.font = font(30); g.fillText(title, 60, 140);
         var m = mode;
         if (kind === 'one') {
           var it0 = list[0], l = label(it0, m);
@@ -478,8 +481,8 @@ document.addEventListener('DOMContentLoaded', function () {
           g.fillText(l[1] || l[0] || '', 60, 1100);
           g.font = font(36, '400');
           if (l[1] && l[0]) g.fillText(l[0], 60, 1155);
-          g.fillText(it0.date, 60, 1290);
-          g.textAlign = 'right'; g.fillText((it0.themes || []).join(' / '), W - 60, 1290); g.textAlign = 'left';
+          g.fillText(it0.date, 60, 1262);
+          g.textAlign = 'right'; g.fillText((it0.themes || []).join(' / '), W - 60, 1262); g.textAlign = 'left';
         } else if (kind === 'week') {
           var n = list.length, gh = 1000, ch = Math.floor(gh / Math.max(n, 1));
           list.forEach(function (it1, i) {
@@ -506,8 +509,10 @@ document.addEventListener('DOMContentLoaded', function () {
           g.fillStyle = '#1a1a1a'; g.font = font(28, '400');
           g.fillText(n2 + ' colors', 60, 1250);
         }
-        g.fillStyle = '#1a1a1a'; g.fillRect(60, 1306, W - 120, 2);
-        g.font = font(22, '400'); g.fillText('「今日の色」を重ねるアプリ', 60, 1334);
+        g.fillStyle = '#1a1a1a'; g.fillRect(60, 1292, W - 120, 1);
+        g.textAlign = 'left'; g.font = font(26); g.fillText('いろはろ', 60, 1330);
+        g.textAlign = 'right'; g.font = font(20, '400'); g.fillStyle = '#555'; g.fillText('「今日の色」を重ねるアプリ', W - 60, 1330);
+        g.textAlign = 'left';
         lastURL = c.toDataURL('image/png');
         $('exprev').src = lastURL; openM('exM');
       } catch (e) { toast('画像を作れませんでした'); }
