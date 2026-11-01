@@ -1,556 +1,443 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>いろはろ</title>
-<meta name="theme-color" content="#faf8f3">
-<meta name="description" content="「今日の色」を重ねるアプリ">
-<meta property="og:type" content="website">
-<meta property="og:title" content="いろはろ">
-<meta property="og:description" content="「今日の色」を重ねるアプリ">
-<meta property="og:image" content="./ogp.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="いろはろ">
-<meta name="twitter:description" content="「今日の色」を重ねるアプリ">
-<meta name="twitter:image" content="./ogp.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>自由律をつかまえる</title>
+<meta name="description" content="ただよう言葉から自由律俳句を詠むアプリ。2〜3個の言葉を入れると、句が3つ浮かびます。">
+<meta name="theme-color" content="#2A2623">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="自由律をつかまえる">
+<meta property="og:description" content="ただよう言葉から自由律俳句を詠むアプリ">
+<meta property="og:image" content="./ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="自由律をつかまえる">
+<meta name="twitter:description" content="ただよう言葉から自由律俳句を詠むアプリ">
+<meta name="twitter:image" content="./ogp.png">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:#faf8f3;color:#1a1a1a;font-family:"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
-header{position:sticky;top:0;z-index:20;background:#faf8f3;border-bottom:2px solid #1a1a1a;display:flex;align-items:center;padding:6px 12px;padding-top:max(6px,env(safe-area-inset-top))}
-header h1{flex:1;margin:0;font-size:1.3rem;letter-spacing:.3em}
-header small{display:block;font-size:.6rem;letter-spacing:.1em;font-weight:400;color:#555}
-.ib{width:44px;height:44px;border:2px solid #1a1a1a;background:#fff;border-radius:50%;font-size:1.1rem;margin-left:8px;cursor:pointer}
-main{max-width:560px;margin:0 auto;padding:12px}
-h2{font-size:.85rem;letter-spacing:.2em;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin:20px 0 10px}
-.btn{min-height:44px;min-width:44px;padding:8px 14px;border:2px solid #1a1a1a;background:#fff;color:#1a1a1a;font-size:.9rem;font-weight:700;border-radius:4px;cursor:pointer;transition:transform .08s}
-.btn:active{transform:scale(.95);background:#1a1a1a;color:#fff}
-.btn.pri{background:#1a1a1a;color:#fff}.btn.pri:active{background:#fff;color:#1a1a1a}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-#stage{position:relative;margin-top:10px;display:none}
-#cv{width:100%;display:block;touch-action:none;border:2px solid #1a1a1a;background:#eee}
-#loupe{position:fixed;width:104px;height:104px;border-radius:50%;border:3px solid #1a1a1a;box-shadow:0 0 0 2px #fff,0 4px 12px rgba(0,0,0,.4);pointer-events:none;display:none;z-index:30;background:#fff;overflow:hidden}
-#picked{display:none;margin-top:10px;border:2px solid #1a1a1a;background:#fff}
-#sw{height:110px;display:flex;align-items:flex-end;padding:8px;font-weight:700}
-#pinfo{padding:8px 10px;font-size:.85rem;border-top:2px solid #1a1a1a}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.chip{min-height:44px;padding:4px 14px;border:2px solid #1a1a1a;background:#fff;border-radius:22px;font-size:.85rem;cursor:pointer}
-.chip.on{background:#1a1a1a;color:#fff}.chip.on::before{content:"✓ "}
-.chips.sm .chip{min-height:44px}
-input[type=text],input[type=password],input[type=tel],select{min-height:44px;border:2px solid #1a1a1a;border-radius:4px;padding:4px 10px;font-size:1rem;background:#fff;color:#1a1a1a;max-width:100%}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:#fff;border:1px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;position:relative}
-.card.sel{outline:3px solid #1a1a1a;outline-offset:2px}
-.card .c{height:96px;position:relative;cursor:pointer}
-.card .c img{position:absolute;right:6px;top:6px;width:38px;height:38px;object-fit:cover;border:2px solid #fff}
-.card .t{padding:6px 8px 4px;font-size:.72rem;min-height:56px}
-.card .t b{display:block;font-size:.85rem}
-.card .d{display:flex;justify-content:space-between;align-items:center;padding:0 4px 4px 8px;font-size:.65rem;color:#444}
-.card .x{min-width:44px;min-height:44px;border:0;background:none;font-size:.8rem;cursor:pointer;text-decoration:underline}
-.empty{padding:24px;text-align:center;border:2px dashed #888;color:#444}
-.mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
-.mask.show{display:flex}
-.modal{background:#faf8f3;border:2px solid #1a1a1a;max-width:420px;width:100%;max-height:88vh;overflow:auto;padding:16px}
-.modal h3{margin:0 0 8px;letter-spacing:.15em}.modal ol{padding-left:1.2em;font-size:.9rem}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:24px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
-#toast.show{opacity:1}
-#lock{position:fixed;inset:0;background:#faf8f3;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
-#lock.show{display:flex}
-#inst{position:fixed;left:12px;right:12px;bottom:12px;max-width:520px;margin:0 auto;background:#1a1a1a;color:#fff;padding:12px;border-radius:6px;z-index:70;transform:translateY(160%);transition:transform .5s ease;font-size:.85rem}
-#inst.show{transform:none}
-#inst .btn{background:#fff;color:#1a1a1a;border-color:#fff}
-.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0}.ctrl>.btn{flex:0 0 auto}.ctrl .disp{display:flex;align-items:center;gap:6px;flex:1 1 220px;font-size:.85rem;white-space:nowrap}.ctrl .disp select{flex:1;min-width:0}
-@media(max-width:420px){.ctrl>.btn{flex:1 1 100%}}
-.mrow{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;padding:2px 0}.mrow span{font-weight:700}
-#exprev{max-width:100%;border:1px solid #1a1a1a;display:block;margin:8px 0}
+:root{--ink:#2A2623;--sub:#5A4F47;--paper:#F4EEE0;--card:#FBF7EC;--main:#2A2623;--stamp:#B8321F;--line:#CBBDA2;--ai:#274A6B}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"UD Digi Kyokasho NP-R","BIZ UDPMincho","BIZ UDMincho","UDMincho","Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;line-height:1.8;padding-bottom:env(safe-area-inset-bottom)}
+.serif{font-family:inherit}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.96)}
+:focus-visible{outline:3px solid var(--ai);outline-offset:2px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:calc(18px + env(safe-area-inset-top)) 16px 14px;border-bottom:3px double var(--ink);background:var(--card)}
+h1::before{content:"";display:inline-block;width:.45em;height:.45em;margin-right:.45em;background:var(--stamp);border-radius:1px;vertical-align:.1em}
+h1{margin:0;font-size:1.55rem;letter-spacing:.08em;line-height:1.3}
+.subt{margin:4px 0 0;font-size:.85rem;color:var(--sub)}
+.round{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:var(--card);font-weight:700;font-size:1.2rem}
+main{max-width:640px;margin:0 auto;padding:18px 16px}
+section{margin-bottom:28px}
+h2{font-size:1.05rem;margin:0 0 10px;padding-left:10px;border-left:6px solid var(--main)}
+label{display:block;font-size:.9rem;margin-bottom:6px}
+.inp{width:100%;min-height:48px;padding:10px 12px;border:2px solid var(--ink);border-radius:6px;background:#FFFDF6;font-size:1rem}
+.btn{min-height:48px;min-width:44px;padding:10px 20px;border:2px solid var(--main);border-radius:6px;background:var(--main);color:#fff;font-weight:700;font-size:1rem}
+.btn.ghost{background:var(--card);color:var(--main)}
+.btn.block{width:100%;margin-top:12px;font-size:1.1rem;letter-spacing:.2em}
+.note{font-size:.82rem;color:var(--sub);margin:6px 0 0}
+#results{display:flex;flex-direction:row-reverse;flex-wrap:wrap;justify-content:center;gap:16px;min-height:120px;margin-top:18px;padding:18px 8px;background:var(--card);border:1px dashed var(--line);border-radius:8px}
+.empty{align-self:center;color:var(--sub);font-size:.9rem;text-align:center;width:100%}
+.wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;animation:in .6s ease both}
+@keyframes in{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.card,.tz{position:relative;writing-mode:vertical-rl;font-family:inherit;font-size:1.35rem;line-height:2;letter-spacing:.16em;padding:34px 14px 18px;min-width:56px;min-height:56px;max-height:18em;background:linear-gradient(90deg,#FBF7EC,#F3EAD3);border:1px solid #BCAA88;border-top:4px solid var(--stamp);border-radius:1px;box-shadow:2px 3px 0 rgba(42,38,35,.18);text-align:start;color:var(--ink)}
+.card::before,.tz::before{content:"";position:absolute;top:10px;left:50%;width:9px;height:9px;margin-left:-4.5px;border:2px solid #BCAA88;border-radius:50%;background:var(--paper)}
+.card.pop,.tz.pop{animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12) rotate(-2deg)}100%{transform:scale(1)}}
+.lab{font-size:.8rem;color:var(--sub);min-height:1.4em}
+.done .card{background:linear-gradient(90deg,#F6EEDC,#EADFC2);border-color:var(--stamp)}
+.done .lab{color:var(--stamp);font-weight:700}
+.stamp{position:absolute;left:-10px;bottom:34px;width:34px;height:34px;display:grid;place-items:center;background:var(--stamp);color:#FBF7EC;box-shadow:inset 0 0 0 2px #FBF7EC,0 0 0 1px var(--stamp);border-radius:3px;font:700 1.15rem "BIZ UDPMincho","Yu Mincho","Hiragino Mincho ProN",serif;transform:rotate(-6deg);animation:st .35s ease-out}
+@keyframes st{from{transform:scale(2.4) rotate(-6deg);opacity:0}to{transform:scale(1) rotate(-6deg);opacity:1}}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.chead h2{margin:0}
+#list{list-style:none;margin:0;padding:12px 8px;display:flex;direction:rtl;gap:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--line);border-radius:6px}
+#list li{direction:ltr;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px}
+.dt{font-size:.72rem;color:var(--sub)}
+.del{min-width:44px;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--sub);font-size:.8rem}
+.share{min-width:44px;min-height:44px;padding:0 12px;border:1px solid var(--stamp);border-radius:6px;background:transparent;color:var(--stamp);font-size:.85rem;font-weight:700}
+.share::before{content:"";display:inline-block;width:.55em;height:.55em;margin-right:.4em;background:var(--stamp);border-radius:1px}
+.acts{display:flex;gap:8px}
+.edit{min-width:64px;min-height:44px;padding:0 12px;border:1px solid var(--ink);border-radius:6px;background:transparent;color:var(--ink);font-size:.85rem;font-weight:700}
+.wrap .share{min-width:64px}
+.hint{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(42,38,35,.6)}
+.modal[hidden]{display:none}
+.sheet{width:100%;max-width:440px;max-height:90vh;overflow:auto;padding:20px;background:var(--card);border:2px solid var(--ink);border-radius:6px}
+.sheet h3{margin:0 0 10px;font-size:1.15rem}
+.sheet ol,.sheet ul{padding-left:1.3em;margin:0 0 12px}
+.row2{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#lock{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:var(--ink);color:#fff;text-align:center}
+#lock[hidden]{display:none}
+#lock .inp{max-width:260px;text-align:center;letter-spacing:.4em;font-size:1.3rem;color:var(--ink)}
+#lockMsg{min-height:1.6em;font-weight:700;color:#F5C6A8}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:70;max-width:90vw;padding:10px 18px;background:var(--ink);color:#fff;border-radius:24px;font-size:.9rem;transition:.3s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#install{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px;background:var(--card);border:2px solid var(--ink);border-radius:6px;transform:translateY(160%);transition:transform .5s ease}
+#install.show{transform:none}
+#install p{flex:1;min-width:160px;margin:0;font-size:.9rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div id="app">
 <header>
-  <h1>いろはろ<small>「今日の色」を重ねるアプリ</small></h1>
-  <button class="ib" id="helpBtn" aria-label="使い方">？</button>
-  <button class="ib" id="setBtn" aria-label="設定">⚙️</button>
+  <div>
+    <h1 class="serif">自由律をつかまえる</h1>
+    <p class="subt">ただよう言葉から自由律俳句を詠むアプリ</p>
+  </div>
+  <button type="button" class="round" id="helpBtn" aria-label="使い方・ヘルプ">？</button>
 </header>
 <main>
-  <h2>01 ／ 色をあつめる</h2>
-  <div class="row">
-    <button class="btn pri" id="camBtn">📷 カメラでとる</button>
-    <button class="btn" id="fileBtn">🖼 写真をえらぶ</button>
+  <section aria-labelledby="h-make">
+    <h2 id="h-make">言葉をいれる</h2>
+    <label for="words">ことばを2〜3個（空白で区切ります）</label>
+    <input class="inp" id="words" type="text" autocomplete="off" placeholder="例：電車 ため息 月曜日">
+    <button type="button" class="btn block" id="makeBtn">句を詠む</button>
+    <button type="button" class="btn ghost block" id="selfBtn" style="margin-top:10px;font-size:1rem">自分で一から詠む</button>
+    <p class="note" id="msg" role="status"></p>
+    <div id="results" aria-live="polite"><p class="empty">ここに句が3つ浮かびます。</p></div>
+  </section>
+  <section aria-labelledby="h-book">
+    <div class="chead">
+      <h2 id="h-book">句集 <span id="count"></span></h2>
+      <button type="button" class="btn ghost" id="setBtn">パスコード設定</button>
+    </div>
+    <ul id="list"></ul>
+    <p class="hint">句集は横にスクロールできます。</p>
+  </section>
+</main>
+</div>
+
+<div class="modal" id="helpModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="helpT">
+    <h3 id="helpT">使い方</h3>
+    <ol>
+      <li>ことばを2〜3個、空白で区切って入れます。</li>
+      <li>「句を詠む」を押すと、句が3つ浮かびます。何度でも詠めます。</li>
+      <li>気に入った句をタップすると朱印が押され、句集につかまります。</li>
+      <li>「編集」を押すと、浮かんだ句を自分の言葉に手直ししてから句集に入れられます。「自分で一から詠む」なら、まったく新しい句も入れられます。</li>
+      <li>「共有」を押すと、Xなどに句を投稿できます。共有できない端末では、コピーされます。</li>
+      <li>句集の「削除」で、いらない句をはずせます。</li>
+    </ol>
+    <p class="note">句はこの端末の中だけに保存されます。「パスコード設定」で、数字の鍵をかけることもできます。</p>
+    <div class="row2"><button type="button" class="btn" data-close>とじる</button></div>
   </div>
-  <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
-  <input type="file" id="fileIn" accept="image/*" hidden>
-  <div id="stage"><canvas id="cv"></canvas><p style="font-size:.8rem;margin:4px 0">写真の上をなぞると、ルーペで色をえらべます。</p></div>
-  <div id="loupe"><canvas id="lcv" width="104" height="104"></canvas></div>
-  <div id="picked">
-    <div id="sw"></div>
-    <div id="pinfo"></div>
-    <div style="padding:0 10px 10px">
-      <div style="font-size:.8rem;font-weight:700;margin-top:6px">テーマ</div>
-      <div class="chips" id="themeChips"></div>
-      <div class="row"><input type="text" id="newTheme" placeholder="例：夕暮れ・お出かけ" maxlength="10" style="flex:1;min-width:120px"><button class="btn" id="addTheme">＋ 新しいテーマを追加</button></div>
-      <button class="btn mgrBtn" style="margin-top:8px;width:100%">🏷 テーマを管理（削除）</button>
-      <button class="btn pri" id="saveBtn" style="width:100%;margin-top:10px">この色をあつめる</button>
+</div>
+
+<div class="modal" id="editModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editT">
+    <h3 id="editT">句を手直しする</h3>
+    <label for="editTa">好きなように書き換えてください</label>
+    <textarea class="inp" id="editTa" rows="3" maxlength="60" style="min-height:96px;resize:vertical;font-size:1.15rem;line-height:1.8"></textarea>
+    <p class="note" id="editMsg" role="status">60字まで。改行はなくなります。</p>
+    <div class="row2">
+      <button type="button" class="btn" id="editSave">この句を詠む（句集につかまえる）</button>
+      <button type="button" class="btn ghost" data-close>やめる</button>
     </div>
   </div>
-
-  <h2>02 ／ あつめた色</h2>
-  <div class="chips sm" id="filterChips"></div>
-  <div class="ctrl">
-  <button class="btn mgrBtn">🏷 テーマを追加・削除</button>
-  <label class="disp"><span>表示：</span>
-    <select id="modeSel">
-      <option value="0">カラーコードと色名</option>
-      <option value="1">カラーコードのみ</option>
-      <option value="2">色名のみ</option>
-      <option value="3">表示なし</option>
-    </select>
-  </label>
-  </div>
-  <div id="list" class="grid" style="margin-top:12px"></div>
-
-  <h2>03 ／ 画像にして保存</h2>
-  <p style="font-size:.8rem;margin:0 0 8px">一覧の色をタップで選ぶと「今日の色」カードにできます。</p>
-  <div class="row">
-    <button class="btn" data-ex="one">今日の色</button>
-    <button class="btn" data-ex="week">1週間</button>
-    <button class="btn" data-ex="month">1か月</button>
-    <button class="btn" data-ex="theme">テーマまとめ</button>
-  </div>
-</main>
-
-<div class="mask" id="helpM"><div class="modal">
-  <h3>使い方</h3>
-  <ol>
-    <li>「カメラでとる」か「写真をえらぶ」で写真を出します。</li>
-    <li>写真の上を指でなぞると、ルーペが出て色がえらべます。</li>
-    <li>テーマをえらんで「この色をあつめる」を押すと保存されます。</li>
-    <li>色名は日本の伝統色から自動でつきます。</li>
-    <li>下の「画像にして保存」で、ポスター風の画像を作れます。</li>
-  </ol>
-  <p style="font-size:.8rem">パレットは、色を毎日あつめて重ねるだけ。1週間・1か月・テーマごとにまとめられます。</p>
-  <button class="btn pri" data-close style="width:100%">とじる</button>
-</div></div>
-
-<div class="mask" id="setM"><div class="modal">
-  <h3>設定</h3>
-  <p style="font-size:.9rem;margin:0 0 6px">パスコードロック：<b id="lockState">オフ</b></p>
-  <input type="tel" id="pcIn" inputmode="numeric" maxlength="8" placeholder="数字4〜8けた" style="width:100%">
-  <div class="row" style="margin-top:8px">
-    <button class="btn pri" id="pcSet">設定・変更する</button>
-    <button class="btn" id="pcOff">解除する</button>
-  </div>
-  <button class="btn" data-close style="width:100%;margin-top:12px">とじる</button>
-</div></div>
-
-<div class="mask" id="themeM"><div class="modal">
-  <h3>テーマの管理</h3>
-  <div class="row"><input type="text" id="mgrIn" placeholder="例：夕暮れ・お出かけ" maxlength="10" style="flex:1;min-width:120px"><button class="btn pri" id="mgrAdd">＋ 新しいテーマを追加</button></div>
-  <div id="mgrList" style="margin:12px 0"></div>
-  <button class="btn" data-close style="width:100%">とじる</button>
-</div></div>
-
-<div class="mask" id="exM"><div class="modal">
-  <h3>画像ができました</h3>
-  <img id="exprev" alt="書き出した画像">
-  <p style="font-size:.8rem;margin:0">保存ボタンで保存。うまくいかない時は画像を長押ししてください。</p>
-  <div class="row" style="margin-top:8px"><button class="btn pri" id="exSave" style="flex:1">保存する</button><button class="btn" data-close>とじる</button></div>
-</div></div>
-
-<div id="lock"><div style="font-size:1.6rem;letter-spacing:.3em;font-weight:700">いろはろ</div>
-  <div>パスコードを入力してください</div>
-  <input type="password" id="lockIn" inputmode="numeric" maxlength="8" style="text-align:center">
-  <button class="btn pri" id="lockBtn" style="min-width:140px">ひらく</button>
-  <div id="lockMsg" style="min-height:1.5em;font-weight:700"></div>
 </div>
-<div id="toast"></div>
-<div id="inst"><div id="instTx" style="margin-bottom:8px">ホーム画面に追加してアプリとして使う</div>
-  <div class="row"><button class="btn" id="instGo">追加する</button><button class="btn" id="instNo">あとで</button></div></div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  var COLORS = [
-    ['朱色','#EB6101'],['茜色','#B7282E'],['紅梅色','#F2A0A1'],['桜色','#FEF4F4'],['鴇色','#F4B3C2'],['臙脂色','#9F353A'],
-    ['柿色','#ED6D3D'],['山吹色','#F8B500'],['卵色','#FCD575'],['若草色','#C3D825'],['萌黄色','#A8C97F'],['若竹色','#68BE8D'],
-    ['常磐色','#007B43'],['深緑','#00552E'],['青磁色','#7EBEA5'],['浅葱色','#00A3AF'],['縹色','#2792C3'],['空色','#A0D8EF'],
-    ['水色','#BCE2E8'],['藍色','#165E83'],['紺色','#0F2540'],['瑠璃色','#1E50A2'],['藤色','#BBBCDE'],['菫色','#7058A3'],
-    ['古代紫','#895B8A'],['江戸紫','#745399'],['鳶色','#95483F'],['栗色','#762F07'],['茶色','#965042'],['琥珀色','#BF783A'],
-    ['黄土色','#C39143'],['利休色','#888E7E'],['鼠色','#949495'],['銀鼠','#AFAFB0'],['墨色','#595857'],['漆黒','#0D0015'],
-    ['白練','#F3F3F2'],['象牙色','#F8F4E6'],['生成り色','#FBFAF5'],['檸檬色','#F7E55A'],['橙色','#EE7800'],['千草色','#3A8FB7']
-  ].map(function (c) { return { n: c[0], h: c[1], r: parseInt(c[1].substr(1, 2), 16), g: parseInt(c[1].substr(3, 2), 16), b: parseInt(c[1].substr(5, 2), 16) }; });
-  var K = { items: 'iroharo_items', themes: 'iroharo_themes', mode: 'iroharo_mode', pass: 'iroharo_pass', inst: 'iroharo_inst' };
-  var mem = {};
-  function $(id) { return document.getElementById(id); }
-  function load(k, d) {
-    try { var v = localStorage.getItem(k); if (v !== null) return JSON.parse(v); } catch (e) {}
-    return (k in mem) ? mem[k] : d;
-  }
-  function save(k, v) {
-    mem[k] = v;
-    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
-  }
-  function toast(t) {
-    var el = $('toast'); if (!el) return;
-    el.textContent = t; el.classList.add('show');
-    setTimeout(function () { el.classList.remove('show'); }, 1800);
-  }
-  var items = [], themes = [], mode = 0, filter = '', cur = null, curThemes = [], selId = null, imgReady = false;
-  try { items = load(K.items, []); if (!Array.isArray(items)) items = []; } catch (e) { items = []; }
-  try { themes = load(K.themes, ['空', '葉っぱ', '花', '街並み']); if (!Array.isArray(themes)) themes = ['空', '葉っぱ', '花', '街並み']; } catch (e) { themes = ['空', '葉っぱ', '花', '街並み']; }
-  mode = Number(load(K.mode, 0)) || 0;
+<div class="modal" id="setModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setT">
+    <h3 id="setT">パスコード設定</h3>
+    <p id="setState" class="note" style="margin:0 0 10px"></p>
+    <label for="newCode">数字4〜8けた</label>
+    <input class="inp" id="newCode" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+    <p class="note" id="setMsg" role="status"></p>
+    <div class="row2">
+      <button type="button" class="btn" id="setSave">設定する</button>
+      <button type="button" class="btn ghost" id="setClear" hidden>解除する</button>
+      <button type="button" class="btn ghost" data-close>とじる</button>
+    </div>
+    <p class="note">忘れると開けなくなります。数字は忘れないようにしてください。</p>
+  </div>
+</div>
 
-  function hex2(n) { var s = n.toString(16).toUpperCase(); return s.length < 2 ? '0' + s : s; }
-  function toHex(r, g, b) { return '#' + hex2(r) + hex2(g) + hex2(b); }
-  function nearest(r, g, b) {
-    var best = COLORS[0], bd = 1e9;
-    COLORS.forEach(function (c) {
-      var d = (c.r - r) * (c.r - r) + (c.g - g) * (c.g - g) + (c.b - b) * (c.b - b);
-      if (d < bd) { bd = d; best = c; }
-    });
-    return best.n;
-  }
-  function fg(r, g, b) { return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#111' : '#fff'; }
-  function today() { var d = new Date(); return d.getFullYear() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2); }
-  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function label(it, m) {
-    var rgb = 'RGB ' + it.r + ',' + it.g + ',' + it.b;
-    if (m === 0) return [it.hex, it.name, rgb];
-    if (m === 1) return [it.hex, '', rgb];
-    if (m === 2) return ['', it.name, ''];
-    return ['', '', ''];
-  }
+<div id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lockT">
+  <h2 id="lockT" class="serif" style="border:0;padding:0;font-size:1.4rem">自由律をつかまえる</h2>
+  <p style="margin:0">パスコードを入れてください</p>
+  <input class="inp" id="lockIn" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" aria-label="パスコード">
+  <button type="button" class="btn" id="lockBtn" style="background:#fff;color:var(--ink);border-color:#fff">ひらく</button>
+  <p id="lockMsg" role="alert"></p>
+</div>
 
-  // ---- modals
-  function openM(id) { var m = $(id); if (m) m.classList.add('show'); }
-  function closeAll() { var ms = document.querySelectorAll('.mask'); for (var i = 0; i < ms.length; i++) ms[i].classList.remove('show'); }
-  var cl = document.querySelectorAll('[data-close]');
-  for (var ci = 0; ci < cl.length; ci++) cl[ci].addEventListener('click', closeAll);
-  var masks = document.querySelectorAll('.mask');
-  for (var mi = 0; mi < masks.length; mi++) masks[mi].addEventListener('click', function (e) { if (e.target === this) closeAll(); });
-  $('helpBtn') && $('helpBtn').addEventListener('click', function () { openM('helpM'); });
-  $('setBtn') && $('setBtn').addEventListener('click', function () { refreshLockState(); openM('setM'); });
+<div id="install" role="region" aria-label="ホーム画面に追加">
+  <p>ホーム画面に追加すると、すぐ開けます。</p>
+  <button type="button" class="btn" id="instYes">追加する</button>
+  <button type="button" class="btn ghost" id="instNo">あとで</button>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
 
-  // ---- passcode
-  function refreshLockState() { var p = load(K.pass, ''); $('lockState').textContent = p ? 'オン' : 'オフ'; }
-  $('pcSet').addEventListener('click', function () {
-    var v = $('pcIn').value.replace(/\D/g, '');
-    if (v.length < 4) { toast('4けた以上の数字を入れてください'); return; }
-    save(K.pass, v); $('pcIn').value = ''; refreshLockState(); toast('パスコードを設定しました');
-  });
-  $('pcOff').addEventListener('click', function () { save(K.pass, ''); $('pcIn').value = ''; refreshLockState(); toast('パスコードを解除しました'); });
-  function tryUnlock() {
-    var p = load(K.pass, '');
-    if ($('lockIn').value === p) { $('lock').classList.remove('show'); $('lockIn').value = ''; $('lockMsg').textContent = ''; }
-    else { $('lockMsg').textContent = '✕ パスコードがちがいます'; }
-  }
-  $('lockBtn').addEventListener('click', tryUnlock);
-  $('lockIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryUnlock(); });
-  if (load(K.pass, '')) $('lock').classList.add('show');
-
-  // ---- image + picker
-  var cv = $('cv'), ctx = cv.getContext('2d'), lp = $('loupe'), lcv = $('lcv'), lctx = lcv.getContext('2d');
-  var srcImg = null;
-  function loadFile(f) {
-    if (!f) return;
-    var MAX = 800;
-    function put(src, w, h) {
-      var sc = Math.min(1, MAX / Math.max(w, h));
-      cv.width = Math.max(1, Math.round(w * sc)); cv.height = Math.max(1, Math.round(h * sc));
-      ctx.drawImage(src, 0, 0, cv.width, cv.height);
-      srcImg = true; imgReady = true; cur = null;
-      $('picked').style.display = 'none';
-      $('stage').style.display = 'block';
-      toast('写真をなぞって色をえらんでください');
-    }
-    function viaImage() {
-      try {
-        var url = URL.createObjectURL(f), im = new Image();
-        var free = function () {
-          try { URL.revokeObjectURL(url); } catch (e) {}
-          im.onload = null; im.onerror = null; im.src = ''; im = null;
-        };
-        im.onload = function () {
-          try { put(im, im.naturalWidth || im.width, im.naturalHeight || im.height); } catch (e) { toast('写真を開けませんでした'); }
-          free();
-        };
-        im.onerror = function () { free(); toast('写真を開けませんでした'); };
-        im.src = url;
-      } catch (e) { toast('写真を開けませんでした'); }
-    }
-    try {
-      if (window.createImageBitmap) {
-        createImageBitmap(f).then(function (bm) {
-          try { put(bm, bm.width, bm.height); } catch (e) { toast('写真を開けませんでした'); }
-          try { bm.close(); } catch (e) {}
-        }).catch(viaImage);
-      } else { viaImage(); }
-    } catch (e) { viaImage(); }
-  }
-  $('camBtn').addEventListener('click', function () { $('camIn').click(); });
-  $('fileBtn').addEventListener('click', function () { $('fileIn').click(); });
-  $('camIn').addEventListener('change', function () { loadFile(this.files && this.files[0]); this.value = ''; });
-  $('fileIn').addEventListener('change', function () { loadFile(this.files && this.files[0]); this.value = ''; });
-
-  var pt = null;
-  function coords(e) {
-    var r = cv.getBoundingClientRect();
-    var x = Math.max(0, Math.min(cv.width - 1, Math.round((e.clientX - r.left) * cv.width / r.width)));
-    var y = Math.max(0, Math.min(cv.height - 1, Math.round((e.clientY - r.top) * cv.height / r.height)));
-    return { x: x, y: y };
-  }
-  function drawLoupe(e, p) {
-    try {
-      var n = 13, sx = Math.max(0, Math.min(cv.width - n, p.x - 6)), sy = Math.max(0, Math.min(cv.height - n, p.y - 6));
-      lctx.imageSmoothingEnabled = false;
-      lctx.clearRect(0, 0, 104, 104);
-      lctx.drawImage(cv, sx, sy, n, n, 0, 0, 104, 104);
-      var cx = (p.x - sx + 0.5) * 8, cy = (p.y - sy + 0.5) * 8;
-      lctx.strokeStyle = '#fff'; lctx.lineWidth = 3; lctx.strokeRect(cx - 5, cy - 5, 10, 10);
-      lctx.strokeStyle = '#000'; lctx.lineWidth = 1.5; lctx.strokeRect(cx - 5, cy - 5, 10, 10);
-      var lx = e.clientX - 52, ly = e.clientY - 150;
-      if (ly < 60) ly = e.clientY + 50;
-      lx = Math.max(4, Math.min(window.innerWidth - 108, lx));
-      lp.style.left = lx + 'px'; lp.style.top = ly + 'px'; lp.style.display = 'block';
-    } catch (er) {}
-  }
-  function pick(p) {
-    try {
-      var d = ctx.getImageData(p.x, p.y, 1, 1).data;
-      setPicked(d[0], d[1], d[2], p);
-    } catch (e) { toast('色を取得できませんでした'); }
-  }
-  cv.addEventListener('pointerdown', function (e) {
-    if (!imgReady) return; e.preventDefault();
-    try { cv.setPointerCapture(e.pointerId); } catch (er) {}
-    pt = coords(e); drawLoupe(e, pt); pick(pt);
-  });
-  cv.addEventListener('pointermove', function (e) {
-    if (!pt) return; e.preventDefault();
-    pt = coords(e); drawLoupe(e, pt); pick(pt);
-  });
-  function endPt() { pt = null; lp.style.display = 'none'; }
-  cv.addEventListener('pointerup', endPt);
-  cv.addEventListener('pointercancel', endPt);
-
-  function setPicked(r, g, b, p) {
-    var hex = toHex(r, g, b), name = nearest(r, g, b);
-    var thumb = '';
-    try {
-      var t = document.createElement('canvas'), S = 200; t.width = S; t.height = S;
-      var tc = t.getContext('2d'), side = Math.min(cv.width, cv.height, 200);
-      var sx = Math.max(0, Math.min(cv.width - side, p.x - side / 2)), sy = Math.max(0, Math.min(cv.height - side, p.y - side / 2));
-      tc.drawImage(cv, sx, sy, side, side, 0, 0, S, S);
-      thumb = t.toDataURL('image/jpeg', 0.7); t.width = 0; t.height = 0;
-    } catch (e) {}
-    cur = { r: r, g: g, b: b, hex: hex, name: name, thumb: thumb };
-    $('picked').style.display = 'block';
-    var sw = $('sw'); sw.style.background = hex; sw.style.color = fg(r, g, b);
-    sw.textContent = name;
-    $('pinfo').textContent = hex + '　RGB ' + r + ', ' + g + ', ' + b;
-  }
-
-  // ---- themes
-  function renderThemeChips() {
-    var box = $('themeChips'); box.innerHTML = '';
-    themes.forEach(function (t) {
-      var b = document.createElement('button'); b.className = 'chip' + (curThemes.indexOf(t) >= 0 ? ' on' : ''); b.textContent = t;
-      b.addEventListener('click', function () {
-        var i = curThemes.indexOf(t); if (i >= 0) curThemes.splice(i, 1); else curThemes.push(t);
-        renderThemeChips();
-      });
-      box.appendChild(b);
-    });
-  }
-  function addThemeFrom(inp, select) {
-    var v = inp.value.replace(/\s+/g, ' ').trim();
-    if (!v) { toast('テーマ名を入れてください'); return; }
-    if (v.length > 10) v = v.slice(0, 10);
-    if (themes.indexOf(v) < 0) { themes.push(v); save(K.themes, themes); toast('✓ 「' + v + '」を追加しました'); }
-    else { toast('「' + v + '」はすでにあります'); }
-    if (select && curThemes.indexOf(v) < 0) curThemes.push(v);
-    inp.value = ''; refreshThemes();
-  }
-  function delTheme(t) {
-    if (!confirm('テーマ「' + t + '」を削除しますか？\n（あつめた色は残り、このテーマの印だけ外れます）')) return;
-    themes = themes.filter(function (x) { return x !== t; });
-    curThemes = curThemes.filter(function (x) { return x !== t; });
-    items.forEach(function (it) { it.themes = (it.themes || []).filter(function (x) { return x !== t; }); });
-    if (filter === t) filter = '';
-    save(K.themes, themes); persistItems(); refreshThemes(); toast('「' + t + '」を削除しました');
-  }
-  function renderThemeMgr() {
-    var box = $('mgrList'); if (!box) return; box.innerHTML = '';
-    if (!themes.length) { box.innerHTML = '<div class="empty">テーマがありません。上から追加できます。</div>'; return; }
-    themes.forEach(function (t) {
-      var r = document.createElement('div'); r.className = 'mrow';
-      var sp = document.createElement('span'); sp.textContent = t;
-      var b = document.createElement('button'); b.className = 'btn'; b.textContent = '✕ 削除';
-      b.addEventListener('click', function () { delTheme(t); });
-      r.appendChild(sp); r.appendChild(b); box.appendChild(r);
-    });
-  }
-  function refreshThemes() { renderThemeChips(); renderFilter(); renderThemeMgr(); renderList(); }
-  $('addTheme').addEventListener('click', function () { addThemeFrom($('newTheme'), true); });
-  $('newTheme').addEventListener('keydown', function (e) { if (e.key === 'Enter') addThemeFrom($('newTheme'), true); });
-  $('mgrAdd').addEventListener('click', function () { addThemeFrom($('mgrIn'), false); });
-  $('mgrIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') addThemeFrom($('mgrIn'), false); });
-  var mb = document.querySelectorAll('.mgrBtn');
-  for (var bi = 0; bi < mb.length; bi++) mb[bi].addEventListener('click', function () { renderThemeMgr(); openM('themeM'); });
-  $('saveBtn').addEventListener('click', function () {
-    if (!cur) { toast('先に色をえらんでください'); return; }
-    var it = { id: Date.now() + '' + Math.floor(Math.random() * 1000), r: cur.r, g: cur.g, b: cur.b, hex: cur.hex, name: cur.name, thumb: cur.thumb, date: today(), themes: curThemes.slice() };
-    items.unshift(it); persistItems(); selId = it.id;
-    renderList(); toast('✓ ' + it.name + ' をあつめました');
-  });
-  function persistItems() {
-    save(K.items, items);
-    try { if (localStorage.getItem(K.items) === null) throw 0; } catch (e) { toast('保存容量がいっぱいです'); }
-  }
-
-  // ---- list
-  function renderFilter() {
-    var box = $('filterChips'); box.innerHTML = '';
-    ['すべて'].concat(themes).forEach(function (t) {
-      var v = t === 'すべて' ? '' : t;
-      var b = document.createElement('button'); b.className = 'chip' + (filter === v ? ' on' : ''); b.textContent = t;
-      b.addEventListener('click', function () { filter = v; renderFilter(); renderList(); });
-      box.appendChild(b);
-    });
-  }
-  function renderList() {
-    var box = $('list'); box.innerHTML = '';
-    var arr = items.filter(function (i) { return !filter || (i.themes || []).indexOf(filter) >= 0; });
-    if (!arr.length) { box.style.display = 'block'; box.innerHTML = '<div class="empty">まだ色がありません。<br>写真から最初の1色をあつめましょう。</div>'; return; }
-    box.style.display = 'grid';
-    arr.forEach(function (it) {
-      var d = document.createElement('div'); d.className = 'card' + (it.id === selId ? ' sel' : '');
-      var l = label(it, mode), col = fg(it.r, it.g, it.b);
-      var tx = l[0] || l[1] ? ('<b>' + esc(l[1] || l[0]) + '</b>' + (l[1] && l[0] ? esc(l[0]) : '')) : '';
-      d.innerHTML = '<div class="c" style="background:' + it.hex + ';color:' + col + '">' + (it.thumb ? '<img src="' + it.thumb + '" alt="">' : '') + (it.id === selId ? '<span style="position:absolute;left:8px;bottom:6px;font-weight:700;font-size:.75rem">✓ えらび中</span>' : '') + '</div>' +
-        '<div class="t">' + tx + '<div style="color:#444;margin-top:2px">' + esc((it.themes || []).join(' / ')) + '</div></div>' +
-        '<div class="d"><span>' + it.date + '</span><button class="x">削除</button></div>';
-      d.querySelector('.c').addEventListener('click', function () { selId = it.id; renderList(); });
-      d.querySelector('.x').addEventListener('click', function () {
-        if (!confirm('この色を削除しますか？')) return;
-        items = items.filter(function (x) { return x.id !== it.id; }); persistItems(); renderList();
-      });
-      box.appendChild(d);
-    });
-  }
-  var ms = $('modeSel'); ms.value = String(mode);
-  ms.addEventListener('change', function () { mode = Number(this.value) || 0; save(K.mode, mode); renderList(); });
-
-  // ---- export (Canvas only)
-  var lastURL = '';
-  function loadThumb(it) {
-    return new Promise(function (res) {
-      if (!it.thumb) { res(null); return; }
-      var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = it.thumb;
-    });
-  }
-  function font(s, w) { return (w || '700') + ' ' + s + 'px "Hiragino Sans","Yu Gothic",sans-serif'; }
-  function exportImg(kind) {
-    var list, title, sub;
-    var f = items.filter(function (i) { return !filter || (i.themes || []).indexOf(filter) >= 0; });
-    if (kind === 'one') {
-      var it = items.filter(function (i) { return i.id === selId; })[0] || items[0];
-      if (!it) { toast('色がまだありません'); return; }
-      list = [it]; title = 'TODAY\'S COLOR';
-    } else if (kind === 'week') { list = items.slice(0, 7); title = 'THIS WEEK'; }
-    else if (kind === 'month') { list = items.slice(0, 30); title = 'THIS MONTH'; }
-    else {
-      if (!filter) { toast('上の一覧でテーマをえらんでください'); return; }
-      list = f; title = 'THEME : ' + filter;
-    }
-    if (!list.length) { toast('書き出す色がありません'); return; }
-    Promise.all(list.map(loadThumb)).then(function (ths) {
-      try {
-        var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
-        var g = c.getContext('2d');
-        g.fillStyle = '#faf8f3'; g.fillRect(0, 0, W, H);
-        g.fillStyle = '#1a1a1a'; g.fillRect(60, 60, W - 120, 4);
-        g.textBaseline = 'alphabetic'; g.textAlign = 'left'; g.font = font(30); g.fillText(title, 60, 140);
-        var m = mode;
-        if (kind === 'one') {
-          var it0 = list[0], l = label(it0, m);
-          g.fillStyle = it0.hex; g.fillRect(60, 190, W - 120, 800);
-          if (ths[0]) { g.fillStyle = '#fff'; g.fillRect(W - 60 - 300 - 12, 190 + 40 - 12 + 0, 324, 324); g.drawImage(ths[0], W - 60 - 300, 190 + 40, 300, 300); }
-          g.fillStyle = '#1a1a1a'; g.font = font(64);
-          g.fillText(l[1] || l[0] || '', 60, 1100);
-          g.font = font(36, '400');
-          if (l[1] && l[0]) g.fillText(l[0], 60, 1155);
-          g.fillText(it0.date, 60, 1262);
-          g.textAlign = 'right'; g.fillText((it0.themes || []).join(' / '), W - 60, 1262); g.textAlign = 'left';
-        } else if (kind === 'week') {
-          var n = list.length, gh = 1000, ch = Math.floor(gh / Math.max(n, 1));
-          list.forEach(function (it1, i) {
-            var y = 190 + i * ch; g.fillStyle = it1.hex; g.fillRect(60, y, W - 120, ch);
-            var l1 = label(it1, m); g.fillStyle = fg(it1.r, it1.g, it1.b); g.font = font(Math.min(40, ch * 0.4));
-            g.fillText((l1[1] || l1[0] || ''), 90, y + ch / 2 + 14);
-            g.font = font(26, '400'); g.textAlign = 'right'; g.fillText(it1.date, W - 90, y + ch / 2 + 10); g.textAlign = 'left';
-          });
-          g.fillStyle = '#1a1a1a'; g.font = font(28, '400');
-          g.fillText(list[list.length - 1].date + ' — ' + list[0].date, 60, 1250);
-        } else {
-          var cols = list.length > 12 ? 6 : 4, n2 = list.length, rows = Math.ceil(n2 / cols), gap = 12;
-          var cw = (W - 120 - gap * (cols - 1)) / cols, chh = Math.min(cw * 1.3, (1000 - gap * (rows - 1)) / rows);
-          list.forEach(function (it2, i) {
-            var x = 60 + (i % cols) * (cw + gap), y = 190 + Math.floor(i / cols) * (chh + gap);
-            g.fillStyle = it2.hex; g.fillRect(x, y, cw, chh);
-            g.strokeStyle = '#1a1a1a'; g.lineWidth = 2; g.strokeRect(x, y, cw, chh);
-            var l2 = label(it2, m);
-            if (m !== 3 && chh > 60) {
-              g.fillStyle = fg(it2.r, it2.g, it2.b); g.font = font(cols === 6 ? 16 : 22);
-              g.fillText(l2[1] || l2[0], x + 8, y + chh - 12);
-            }
-          });
-          g.fillStyle = '#1a1a1a'; g.font = font(28, '400');
-          g.fillText(n2 + ' colors', 60, 1250);
-        }
-        g.fillStyle = '#1a1a1a'; g.fillRect(60, 1292, W - 120, 1);
-        g.textAlign = 'left'; g.font = font(26); g.fillText('いろはろ', 60, 1330);
-        g.textAlign = 'right'; g.font = font(20, '400'); g.fillStyle = '#555'; g.fillText('「今日の色」を重ねるアプリ', W - 60, 1330);
-        g.textAlign = 'left';
-        lastURL = c.toDataURL('image/png');
-        $('exprev').src = lastURL; openM('exM');
-      } catch (e) { toast('画像を作れませんでした'); }
-    });
-  }
-  var exb = document.querySelectorAll('[data-ex]');
-  for (var ei = 0; ei < exb.length; ei++) exb[ei].addEventListener('click', function () { exportImg(this.getAttribute('data-ex')); });
-  $('exSave').addEventListener('click', function () {
-    try {
-      var a = document.createElement('a'); a.href = lastURL; a.download = 'iroharo-' + Date.now() + '.png';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); toast('保存しました');
-    } catch (e) { toast('画像を長押しして保存してください'); }
-  });
-
-  // ---- PWA
-  try {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
-  } catch (e) {}
-  var dp = null, inst = $('inst');
-  function standalone() { try { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone; } catch (e) { return false; } }
-  function showInst() { if (inst && !load(K.inst, false) && !standalone()) setTimeout(function () { inst.classList.add('show'); }, 1200); }
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); dp = e; showInst(); });
-  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (ios) { $('instTx').textContent = 'ホーム画面に追加してアプリとして使う：共有ボタン →「ホーム画面に追加」'; $('instGo').style.display = 'none'; showInst(); }
-  $('instGo').addEventListener('click', function () {
-    if (dp) { try { dp.prompt(); } catch (e) {} dp = null; }
-    save(K.inst, true); inst.classList.remove('show');
-  });
-  $('instNo').addEventListener('click', function () { save(K.inst, true); inst.classList.remove('show'); });
-
-  renderThemeChips(); renderFilter(); renderThemeMgr(); renderList(); refreshLockState();
-});
-</script>
 <footer style="text-align: center; font-size: 0.75rem; color: #888; margin-top: 3rem; padding: 1rem 0.5rem; line-height: 1.5;">
   <p style="margin-bottom: 0.5rem;">【ご利用について】</p>
   <p style="margin-bottom: 0.5rem;">本アプリの利用に伴うトラブルやデータ損失等について、開発者は一切の責任を負いかねます。</p>
   <p style="margin-bottom: 0.5rem;">ご意見・不具合のご報告は X（<a href="https://x.com/lblt_labo" target="_blank" rel="noopener" style="color: #666; text-decoration: underline;">@lblt_labo</a>）までお願いいたします。</p>
   <p style="margin-top: 0.5rem;"><a href="https://ofuse.me/lbltlabo/letter" target="_blank" rel="noopener noreferrer" style="color: #666; text-decoration: underline;">☕️ 開発者を応援する / メッセージを送る</a></p>
 </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var KH = 'jiyuritsu_haiku_v1', KP = 'jiyuritsu_pass_v1', mem = {};
+
+  function load(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return mem[k] !== undefined ? mem[k] : d; } }
+  function save(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { mem[k] = v; return false; } }
+  function del(k) { try { localStorage.removeItem(k); } catch (e) {} delete mem[k]; }
+  function hash(s) { var h = 5381, t = 'jh:' + s; for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return String(h); }
+  function loadList() {
+    try { var a = JSON.parse(load(KH, '[]')); return Array.isArray(a) ? a.filter(function (x) { return x && typeof x.t === 'string'; }) : []; }
+    catch (e) { return []; }
+  }
+  function saveList(a) { return save(KH, JSON.stringify(a)); }
+
+  var tt;
+  function toast(m) {
+    var t = $('toast'); if (!t) return;
+    t.textContent = m; t.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('show'); }, 2200);
+  }
+
+  /* ---- 辞書データ ---- */
+  var VERB = ['ほどけていく','黙っている','つまずいている','しずかに冷める','言いそびれる','ひとりで歩く','影をのばす','ぬるくなる','ゆっくり溶ける','ふり向かない','息をひそめる','傘をたたむ','返事をしない','あくびをする','はぐれてしまう','まだ眠っている','こぼれ落ちる','そっと遠のく','数をかぞえている','何も言わない'];
+  var SCENE = ['夕暮れ','雨あがり','始発前','残業の窓','日曜の午後','駅のホーム','湯気のむこう','風のない日','月曜の朝','終電のあと','閉店まぎわ','洗濯日和'];
+  var TIME = ['夕方','真夜中','朝いち','昼さがり','帰り道','休みの前の日','梅雨のはじめ','冬の入口'];
+  var T2 = [
+    '{a}を持て余して{b}になる','{a}と{b}のあいだで{v}','{s}、{a}が{b}を追い越していく','{a}の夜は{b}が{v}',
+    '{b}に{v}ほど{a}がちかい','{a}もうつむいて{b}を待つ','{t}の{a}、{b}はまだ{v}','{a}を見ていたら{b}になっていた',
+    'どうしても{a}と{b}は{v}','{a}ごしに{b}をみている{s}','{a}の{b}をひとり見送る','{s}{a}が{b}にもどれない',
+    '{a}だけ置いて{b}は{v}','{b}の隣で{a}が{v}','{a}があって{b}がなくて{s}','{t}、{a}を{b}にたとえて{v}'
+  ];
+  var T3 = [
+    '{a}と{b}と{c}、{v}','{a}の隣に{b}、{c}はまだ{v}','{s}、{a}{b}{c}と並んで{v}','{a}が{b}にかわる{c}の{t}',
+    '{c}を抱えて{a}と{b}を見ている','{a}も{b}も{c}も{v}{s}','{t}の{a}、{b}の影に{c}','{c}のまま{a}は{b}へ{v}'
+  ];
+
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function parseWords(s) { return String(s || '').split(/[\s,、，。.・　]+/).filter(Boolean); }
+
+  function compose(words) {
+    var w = shuffle(words), n = w.length;
+    var tpl = (n >= 3 && Math.random() < 0.8) ? pick(T3) : pick(T2);
+    var map = { a: w[0], b: w[1], c: w[2] || w[0], v: pick(VERB), s: pick(SCENE), t: pick(TIME) };
+    return tpl.replace(/\{(a|b|c|v|s|t)\}/g, function (_, k) { return map[k]; });
+  }
+  function makeThree(words) {
+    var out = [], tries = 0;
+    while (out.length < 3 && tries < 80) { tries++; var h = compose(words); if (out.indexOf(h) < 0) out.push(h); }
+    return out;
+  }
+
+  /* ---- 結果表示 ---- */
+  var current = [], currentWords = [];
+  /* ---- 共有 ---- */
+  var TAG = '#自由律をつかまえる';
+  function appUrl() { try { var u = location.href.split('#')[0]; return /^https?:/.test(u) ? u : ''; } catch (e) { return ''; } }
+  function copyText(t) {
+    try { if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t); } catch (e) {}
+    return new Promise(function (ok, ng) {
+      try {
+        var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:-100px;opacity:0';
+        document.body.appendChild(ta); ta.select();
+        var r = document.execCommand('copy'); document.body.removeChild(ta); r ? ok() : ng();
+      } catch (e) { ng(e); }
+    });
+  }
+  function shareHaiku(h) {
+    var url = appUrl(), text = h + '\n' + TAG;
+    function fallback() {
+      copyText(text + (url ? '\n' + url : '')).then(function () { toast('コピーしました。SNSに貼りつけてください'); }, function () { toast('共有できませんでした。句を長押しでコピーしてください'); });
+    }
+    try {
+      if (navigator.share) {
+        var data = { text: text }; if (url) data.url = url;
+        navigator.share(data).catch(function (e) { if (!e || e.name !== 'AbortError') fallback(); });
+        return;
+      }
+    } catch (e) {}
+    fallback();
+  }
+
+  function renderResults() {
+    var box = $('results'); if (!box) return;
+    box.innerHTML = '';
+    var saved = loadList().map(function (x) { return x.t; });
+    current.forEach(function (text, i) {
+      var wrap = document.createElement('div'); wrap.className = 'wrap'; wrap.style.animationDelay = (i * 0.18) + 's';
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'card'; btn.textContent = text;
+      btn.setAttribute('aria-label', text + '　タップでつかまえる');
+      var lab = document.createElement('span'); lab.className = 'lab';
+      function mark() {
+        wrap.classList.add('done'); lab.textContent = 'つかまえた ✓';
+        if (!wrap.querySelector('.stamp')) { var s = document.createElement('span'); s.className = 'stamp'; s.setAttribute('aria-hidden', 'true'); s.textContent = '句'; wrap.appendChild(s); }
+      }
+      if (saved.indexOf(text) >= 0) { mark(); } else { lab.textContent = 'タップでつかまえる'; }
+      var sh = document.createElement('button'); sh.type = 'button'; sh.className = 'share'; sh.textContent = '共有';
+      sh.setAttribute('aria-label', '「' + text + '」をSNSで共有');
+      sh.addEventListener('click', function () { shareHaiku(text); });
+      var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'edit'; ed.textContent = '✎ 編集';
+      ed.setAttribute('aria-label', '「' + text + '」を編集してつかまえる');
+      ed.addEventListener('click', function () { openEditor(text, '句を手直しする', mark, currentWords.join('・')); });
+      btn.addEventListener('click', function () {
+        btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+        capture(text, mark);
+      });
+      wrap.appendChild(btn); wrap.appendChild(lab); wrap.appendChild(ed); wrap.appendChild(sh); box.appendChild(wrap);
+    });
+  }
+
+  function capture(text, mark, wtxt) {
+    var list = loadList();
+    if (list.some(function (x) { return x.t === text; })) { toast('この句はもう句集にあります'); mark(); return; }
+    list.unshift({ id: Date.now(), t: text, w: (wtxt !== undefined ? wtxt : currentWords.join('・')), d: new Date().toLocaleDateString('ja-JP') });
+    if (!saveList(list)) toast('保存できませんでした。このまま開いている間だけ残ります');
+    else toast('つかまえました');
+    mark(); renderList();
+    try { var f1 = $('list') && $('list').querySelector('.tz'); if (f1) f1.classList.add('pop'); } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {}
+  }
+
+  function renderList() {
+    var ul = $('list'), cnt = $('count'); if (!ul) return;
+    var list = loadList(); ul.innerHTML = '';
+    if (cnt) cnt.textContent = '（' + list.length + '句）';
+    if (!list.length) {
+      var li0 = document.createElement('li'); li0.style.flex = '1'; li0.style.alignItems = 'flex-start'; li0.style.color = 'var(--sub)';
+      li0.textContent = 'まだ句はありません。気に入った句をタップして、つかまえましょう。';
+      ul.appendChild(li0); return;
+    }
+    list.forEach(function (x) {
+      var li = document.createElement('li');
+      var tz = document.createElement('div'); tz.className = 'tz'; tz.textContent = x.t;
+      var dt = document.createElement('span'); dt.className = 'dt'; dt.textContent = x.d || '';
+      var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'del'; bt.textContent = '削除';
+      bt.setAttribute('aria-label', '「' + x.t + '」を削除');
+      bt.addEventListener('click', function () {
+        var ok = true; try { ok = window.confirm('この句を句集から削除しますか？\n' + x.t); } catch (e) {}
+        if (!ok) return;
+        saveList(loadList().filter(function (y) { return y.id !== x.id; }));
+        renderList(); renderResults(); toast('削除しました');
+      });
+      var sh = document.createElement('button'); sh.type = 'button'; sh.className = 'share'; sh.textContent = '共有';
+      sh.setAttribute('aria-label', '「' + x.t + '」をSNSで共有');
+      sh.addEventListener('click', function () { shareHaiku(x.t); });
+      var acts = document.createElement('div'); acts.className = 'acts'; acts.appendChild(sh); acts.appendChild(bt);
+      li.appendChild(tz); li.appendChild(dt); li.appendChild(acts); ul.appendChild(li);
+    });
+  }
+
+  function make() {
+    var inp = $('words'), msg = $('msg'); if (!inp) return;
+    var w = parseWords(inp.value);
+    if (w.length < 2) { if (msg) msg.textContent = 'ことばを2つ以上、空白で区切って入れてください。'; inp.focus(); return; }
+    if (w.length > 3) { w = w.slice(0, 3); if (msg) msg.textContent = '3つまでなので、最初の3つで詠みました。'; }
+    else if (msg) msg.textContent = '';
+    currentWords = w; current = makeThree(w); renderResults();
+  }
+  var mk = $('makeBtn'); if (mk) mk.addEventListener('click', make);
+  var wi = $('words'); if (wi) wi.addEventListener('keydown', function (e) { if (e.key === 'Enter') make(); });
+
+  /* ---- モーダル ---- */
+  var lastFocus = null;
+  function openM(id) { var m = $(id); if (!m) return; lastFocus = document.activeElement; m.hidden = false; var f = m.querySelector('textarea,button,input'); if (f) f.focus(); }
+  function closeM(m) { if (!m) return; m.hidden = true; try { if (lastFocus) lastFocus.focus(); } catch (e) {} }
+  ['helpModal', 'setModal', 'editModal'].forEach(function (id) {
+    var m = $(id); if (!m) return;
+    m.addEventListener('click', function (e) { if (e.target === m) closeM(m); });
+    Array.prototype.forEach.call(m.querySelectorAll('[data-close]'), function (b) { b.addEventListener('click', function () { closeM(m); }); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { ['helpModal', 'setModal', 'editModal'].forEach(function (id) { var m = $(id); if (m && !m.hidden) closeM(m); }); }
+  });
+  var hb = $('helpBtn'); if (hb) hb.addEventListener('click', function () { openM('helpModal'); });
+
+  /* ---- 編集・手入力 ---- */
+  var src = { text: '', mark: null, w: '' };
+  function openEditor(text, title, mark, w) {
+    var ta = $('editTa'), t = $('editT'), m = $('editMsg'); if (!ta) return;
+    src = { text: text, mark: mark || null, w: w };
+    if (t) t.textContent = title; if (m) m.textContent = '60字まで。改行はなくなります。';
+    ta.value = text; openM('editModal');
+    try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
+  }
+  var esv = $('editSave');
+  if (esv) esv.addEventListener('click', function () {
+    var ta = $('editTa'), m = $('editMsg'); if (!ta) return;
+    var t = ta.value.replace(/[\r\n]+/g, '').replace(/^\s+|\s+$/g, '').slice(0, 60);
+    if (!t) { if (m) m.textContent = '句を書いてから、押してください。'; ta.focus(); return; }
+    var same = (t === src.text && src.mark) ? src.mark : function () {};
+    closeM($('editModal'));
+    capture(t, same, src.w);
+  });
+  var sfb = $('selfBtn'); if (sfb) sfb.addEventListener('click', function () { openEditor('', '自分で一から詠む', null, ''); });
+
+  /* ---- パスコード ---- */
+  function hasCode() { return !!load(KP, ''); }
+  function setLockView() {
+    var s = $('setState'), c = $('setClear'), sv = $('setSave');
+    if (s) s.textContent = hasCode() ? '現在：パスコードロックあり' : '現在：パスコードロックなし（だれでも開けます）';
+    if (c) c.hidden = !hasCode();
+    if (sv) sv.textContent = hasCode() ? '変更する' : '設定する';
+  }
+  var sb = $('setBtn'); if (sb) sb.addEventListener('click', function () { var n = $('newCode'), m = $('setMsg'); if (n) n.value = ''; if (m) m.textContent = ''; setLockView(); openM('setModal'); });
+  var ss = $('setSave');
+  if (ss) ss.addEventListener('click', function () {
+    var n = $('newCode'), m = $('setMsg'); if (!n || !m) return;
+    if (!/^[0-9]{4,8}$/.test(n.value)) { m.textContent = '数字だけで4〜8けたにしてください。'; n.focus(); return; }
+    save(KP, hash(n.value)); n.value = ''; m.textContent = '設定しました。次に開くときから鍵がかかります。'; setLockView(); toast('パスコードを設定しました');
+  });
+  var sc = $('setClear');
+  if (sc) sc.addEventListener('click', function () { del(KP); var m = $('setMsg'); if (m) m.textContent = '解除しました。'; setLockView(); toast('パスコードを解除しました'); });
+
+  var lock = $('lock'), app = $('app');
+  function showLock() {
+    if (!lock) return; lock.hidden = false;
+    try { if (app) app.setAttribute('inert', ''); } catch (e) {}
+    var i = $('lockIn'); if (i) { i.value = ''; i.focus(); }
+  }
+  function tryUnlock() {
+    var i = $('lockIn'), m = $('lockMsg'); if (!i || !m) return;
+    if (hash(i.value) === load(KP, '')) {
+      lock.hidden = true; m.textContent = '';
+      try { if (app) app.removeAttribute('inert'); } catch (e) {}
+    } else {
+      m.textContent = '数字がちがいます。もう一度どうぞ。'; i.value = '';
+      i.classList.remove('shake'); void i.offsetWidth; i.classList.add('shake'); i.focus();
+    }
+  }
+  var lb = $('lockBtn'); if (lb) lb.addEventListener('click', tryUnlock);
+  var li = $('lockIn'); if (li) li.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryUnlock(); });
+  if (hasCode()) showLock();
+
+  /* ---- ホーム画面に追加 ---- */
+  var deferred = null, ins = $('install');
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); deferred = e;
+    setTimeout(function () { if (ins) ins.classList.add('show'); }, 1500);
+  });
+  var iy = $('instYes');
+  if (iy) iy.addEventListener('click', function () {
+    if (!deferred) return;
+    try { deferred.prompt(); if (deferred.userChoice) deferred.userChoice.then(function () { deferred = null; }); } catch (e) {}
+    if (ins) ins.classList.remove('show');
+  });
+  var inn = $('instNo'); if (inn) inn.addEventListener('click', function () { if (ins) ins.classList.remove('show'); });
+  window.addEventListener('appinstalled', function () { if (ins) ins.classList.remove('show'); });
+
+  renderList();
+
+  try {
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
+  } catch (e) {}
+});
+</script>
 </body>
 </html>
